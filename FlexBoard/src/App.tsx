@@ -1,56 +1,57 @@
-import { useState } from 'react'
+import { SetStateAction, useState } from 'react'
 import './App.css'
 import SelectionList from './components/SelectionList'
 //import { JSX } from 'react/jsx-runtime'
 
+interface IPanelOutput {
+  value: string;
+  setValue: React.Dispatch<SetStateAction<string>>;
+}
+
+const usePanelOutput = () : IPanelOutput => {
+  const [v, setV] = useState("");
+  return {value: v, setValue: setV};
+}
+
 function App() {
-  const [count, setCount] = useState(0)
 
-  const [aVal, setAVal] = useState("");
-  const [bVal, setBVal] = useState("");
-  const [cVal, setCVal] = useState("");
-  const [dVal, setDVal] = useState("");
+  const boxConfig = [
+    {name: "A", depends: []},
+    {name: "B", depends: ["A"]},
+    {name: "C", depends: ["A"]},
+    {name: "D", depends: ["B", "C"]},
+  ]
 
-  const setD = (s: string) => {
-    setDVal(s);
-  }
 
-  const setC = (s: string) => {
-    setD("");
-    setCVal(s);
-  }
+  const boxes = boxConfig.map((b) => {
+    return {
+      ...b, 
+      ...{
+        state: usePanelOutput()
+      }
+    }
+  });
 
-  const setB = (s: string) => {
-    setD("");
-    setBVal(s);
-  }
-
-  const setA = (s: string) => {
-    setAVal(s);
-    setB("");
-    setC("");
+  console.log(boxes);
+  const setPanelOutput = (which: string, value: string) : void => {
+    const box = boxes.find((b) => b.name === which);
+    box?.state.setValue(value);
+    boxes.forEach(b => {
+      if (b.depends.findIndex(b2 => b2 === which) >= 0) {
+        b.state.setValue("");
+      }
+    });
   }
 
   return (
     <>
-      <div className='box'>
-      <p>A</p>
-        <SelectionList inputs={[] as string[]} selected={aVal} setSelected={setA}/>
-      </div>
-      <div className='box'>
-        <p>B</p>
-        <SelectionList inputs={[aVal]} selected={bVal} setSelected={setB}/>
-      </div>
-      <div className='box'>
-      <p>C</p>
-        <SelectionList inputs={[aVal]} selected={cVal} setSelected={setC}/>
-      </div>
-      <div className='box'>
-      <p>D</p>
-        <SelectionList inputs={[bVal, cVal]} selected={dVal} setSelected={setD}/>
-      </div>
-    </>
-  )
+      {boxes.map(box =>
+        <div key={box.name} className='box'>
+          <p>{box.name}</p>
+          <SelectionList inputs={boxes.filter(b => box.depends.includes(b.name)).map(b => b.state.value)} selected={box.state.value} setSelected={(val) => setPanelOutput(box.name, val)} />
+        </div>
+      )}
+    </>);
 }
 
 export default App

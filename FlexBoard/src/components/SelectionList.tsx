@@ -21,7 +21,7 @@ const SelectionList : FC<SolectionListProps> = (props): JSX.Element => {
     }
   return (
     <>
-      <h1>Items</h1>
+      <p><b>Items</b></p>
       <ul>
         {["Foo", "Mork", "Pickle"].map((w) =>
             <li key={w} onMouseDown={() => props.setSelected(prefix + w)} className={prefix + w === props.selected ? "selected" : ""}>{prefix + w}</li>
