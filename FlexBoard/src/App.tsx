@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useState } from 'react'
+import { SetStateAction, useState } from 'react'
 import './App.css'
 import SelectionList from './components/SelectionList'
 import Formatter, { IFormat } from './components/Formatter';
@@ -44,6 +44,7 @@ function App() {
     {name: "B", depends: ["A"], format: bFormat},
     {name: "C", depends: ["A"], format: cFormat},
     {name: "D", depends: ["B", "C"], format: dFormat},
+    {name: "E", depends: ["D"], format: cFormat},
   ]
 
 
@@ -56,6 +57,31 @@ function App() {
     }
   });
 
+  // fill depends array for all upstream panels
+  boxes.forEach(panel => {
+    if (panel.depends == null) return;
+    const queue = [] as string[];
+    panel.depends.forEach(name => queue.push(name));
+    while (queue.length > 0) {
+      const name = queue.shift();
+      const upstreamPanel = boxes.find(p => p.name === name);
+      if (upstreamPanel == null) {
+        console.error("Cannot find panel [" + name + "]");
+        return;
+      }
+      if (upstreamPanel.depends != null) {
+        for (let i = 0; i < upstreamPanel.depends.length; i++) {
+          const newName = upstreamPanel.depends[i];
+          if (panel.depends.indexOf(newName) < 0) {
+            queue.push(newName);
+            panel.depends.push(newName);
+          }
+        }
+      }
+    }
+  });
+
+
   console.log(boxes);
   const setPanelOutput = (which: string, value: string) : void => {
     const box = boxes.find((b) => b.name === which);
@@ -66,18 +92,6 @@ function App() {
       }
     });
   }
-// <SelectionList inputs={boxes.filter(b => box.depends.includes(b.name)).map(b => b.state.value)} selected={box.state.value} setSelected={(val) => setPanelOutput(box.name, val)} />
-
-useEffect(() => {
-document.addEventListener("click", () => {
-  console.log("click!");
-    boxes.forEach(b => {
-      const panel = document.getElementById('__PANEL_' + b.name);
-      const placeholder = document.getElementById('__PLACEHOLDER_' + b.name);
-      if (panel != null) placeholder?.before(panel);
-    });
-  });
-}, []);
 
   return (
     <>
