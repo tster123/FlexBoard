@@ -18,6 +18,7 @@ const SelectionList : FC<SolectionListProps> = (props): JSX.Element => {
             return (<>Waiting for load</>)   
         }
     }
+    console.log(`prefix = [${prefix}]`);
   return (
     <div>
       <p><b>Items</b></p>

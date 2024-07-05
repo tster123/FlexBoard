@@ -8,7 +8,7 @@ export interface IFormatterProps
 
 export interface IFormat
 {
-    isPlaceholder: boolean | undefined;
+    placeholder: string | undefined;
     text: string | undefined;
     tag: string | undefined;
     props: object | undefined;
@@ -19,7 +19,7 @@ export interface IFormat
 const Formatter : FC<React.PropsWithChildren<IFormatterProps>> = (props): JSX.Element => {
     
     const renderOne = (format: IFormat, index: number) => {
-        if (format.isPlaceholder) {
+        if (format.placeholder != null) {
             return props.children;
         }
         else if (format.text != undefined && format.text != null) {
